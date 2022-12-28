@@ -11,13 +11,12 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 
 class QuizQuestionsActivity : AppCompatActivity(),View.OnClickListener {
     var mUsername:String?=null
     private var mCurrentPosition:Int=1
-    private var questionsList:ArrayList<Question>? = null
+    var questions=ArrayList<Questions>()
     private var mSelectedOption:Int = 0
     private var correctOptionCount:Int=0
     lateinit var optionOne :TextView
@@ -29,13 +28,37 @@ class QuizQuestionsActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var tvQuestion:TextView
     lateinit var image:ImageView
     lateinit var btnSubmit:Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quiz_questions)
-
+        Log.d("Now in","QQA onCreate")
+        //receiving the extras
         mUsername=intent.getStringExtra(Constants.USERNAME)
-        questionsList=Constants.getQuestions()
+        var category = intent.getStringExtra("category").toString()
+        Log.d("In QQA",category)
+        if (category.equals("flags"))
+        {
+            questions.clear()
+            questions=Constants.getFlagQuestions()
 
+        }
+        else if(category.equals("famous people")){
+            questions.clear()
+            questions=Constants.getFamousPersonalitiesQuestions()
+
+        }
+        else if(category.equals("disney")){
+            questions.clear()
+            questions=Constants.getDisneyQuestions()
+
+        }
+        else if(category.equals("world")){
+            questions.clear()
+            questions=Constants.getGKQuestions()
+
+        }
+        Log.d("QuestionList",questions.toString())
         optionOne =findViewById(R.id.option_one)
         optionTwo =findViewById(R.id.option_two)
         optionThree =findViewById(R.id.option_three)
@@ -48,14 +71,16 @@ class QuizQuestionsActivity : AppCompatActivity(),View.OnClickListener {
         setQuestion()
         optionOne.setOnClickListener(this)
         optionTwo.setOnClickListener(this)
+
         optionThree.setOnClickListener(this)
         optionFour.setOnClickListener(this)
         btnSubmit.setOnClickListener(this)
     }
     fun setQuestion(){
-        val question=questionsList!!.get(mCurrentPosition-1)
+        val question=questions!!.get(mCurrentPosition-1)
+
         defaultOptionsView()
-        if (mCurrentPosition == questionsList?.size){
+        if (mCurrentPosition == questions?.size){
             btnSubmit.text = "FINISH"
         }else{
             btnSubmit.text="SUBMIT"
@@ -101,26 +126,30 @@ class QuizQuestionsActivity : AppCompatActivity(),View.OnClickListener {
             if (mSelectedOption ==0){
                 mCurrentPosition++
                 when{
-                    mCurrentPosition <= questionsList!!.size ->{
+                    mCurrentPosition <= questions!!.size ->{
                         setQuestion()
                     }
                     else -> {
                         val intent=Intent(applicationContext,FinalScreen::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         intent.putExtra(Constants.USERNAME,mUsername)
                         intent.putExtra(Constants.CORRECT_ANSWERS,correctOptionCount)
-                        intent.putExtra(Constants.TOTAL_QUESTIONS,questionsList!!.size)
+                        intent.putExtra(Constants.TOTAL_QUESTIONS,questions!!.size)
                         startActivity(intent)
+
+                        finish()
+
                     }
                 }
             }else{
-                val question=questionsList?.get(mCurrentPosition-1)
+                val question=questions?.get(mCurrentPosition-1)
                 if (question!!.correctOption != mSelectedOption){
                     answerView(mSelectedOption,R.drawable.wrong_option_border_bg)
                 }else{
                     correctOptionCount++
                 }
                 answerView(question.correctOption,R.drawable.correct_option_border_bg)
-                if (mCurrentPosition ==questionsList?.size){
+                if (mCurrentPosition ==questions?.size){
                     btnSubmit.text="FINISH"
                 }else{
                     btnSubmit.text="NEXT QUESTION"
