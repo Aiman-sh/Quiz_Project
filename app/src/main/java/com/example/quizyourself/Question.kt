@@ -1,6 +1,6 @@
 package com.example.quizyourself
 
-data class Questions(
+data class Question(
     val id:Int,
     val text:String,
     val image:Int,
